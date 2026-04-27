@@ -1,4 +1,4 @@
-import { useState, useMemo, ReactNode } from 'react';
+import { useState, useMemo, ReactNode, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Globe2, 
@@ -9,23 +9,197 @@ import {
   Languages, 
   ChevronRight,
   ArrowLeft,
-  Info
+  Info,
+  Plus,
+  QrCode,
+  Download
 } from 'lucide-react';
-import { Language, Translation } from './types';
-import { data, translations } from './data';
+import { Language, Translation, GeoItem } from './types';
+import { data as initialData, translations } from './data';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('uz');
   const [activeTab, setActiveTab] = useState<'home' | 'continents' | 'oceans' | 'countries' | 'videos'>('home');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  
+  // Local storage management
+  const [customData, setCustomData] = useState<{
+    continents: GeoItem[];
+    oceans: GeoItem[];
+    countries: GeoItem[];
+  }>(() => {
+    const saved = localStorage.getItem('geo_custom_data');
+    return saved ? JSON.parse(saved) : { continents: [], oceans: [], countries: [] };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('geo_custom_data', JSON.stringify(customData));
+  }, [customData]);
+
+  const mergedData = useMemo(() => ({
+    continents: [...initialData.continents, ...customData.continents],
+    oceans: [...initialData.oceans, ...customData.oceans],
+    countries: [...initialData.countries, ...customData.countries],
+    videos: initialData.videos
+  }), [customData]);
 
   const t: Translation = translations[lang];
 
   const currentItem = useMemo(() => {
     if (!selectedItem) return null;
-    const all = [...data.continents, ...data.oceans, ...data.countries];
+    const all = [...mergedData.continents, ...mergedData.oceans, ...mergedData.countries];
     return all.find(item => item.id === selectedItem);
-  }, [selectedItem]);
+  }, [selectedItem, mergedData]);
+
+  const handleAddItem = (newItem: GeoItem, category: 'continents' | 'oceans' | 'countries') => {
+    setCustomData(prev => ({
+      ...prev,
+      [category]: [...prev[category], newItem]
+    }));
+    setIsAddModalOpen(false);
+  };
+
+  const renderAddModal = () => {
+    if (!isAddModalOpen) return null;
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-blue-900/40 backdrop-blur-md">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
+        >
+          <h2 className="text-2xl font-black text-blue-900 mb-6">{t.addItem}</h2>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const category = formData.get('category') as any;
+            const item: GeoItem = {
+              id: Math.random().toString(36).substr(2, 9),
+              name: {
+                uz: formData.get('name_uz') as string,
+                kaa: formData.get('name_kaa') as string,
+                ru: formData.get('name_ru') as string,
+                en: formData.get('name_en') as string,
+              },
+              description: {
+                uz: formData.get('desc_uz') as string,
+                kaa: formData.get('desc_kaa') as string,
+                ru: formData.get('desc_ru') as string,
+                en: formData.get('desc_en') as string,
+              },
+              facts: {
+                uz: (formData.get('facts_uz') as string).split('\n'),
+                kaa: (formData.get('facts_kaa') as string).split('\n'),
+                ru: (formData.get('facts_ru') as string).split('\n'),
+                en: (formData.get('facts_en') as string).split('\n'),
+              },
+              image: formData.get('image') as string || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop",
+              color: "#3b82f6"
+            };
+            handleAddItem(item, category);
+          }} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <select name="category" className="p-4 bg-blue-50 rounded-2xl font-bold text-blue-900 border-2 border-blue-100 outline-none">
+                 <option value="continents">{t.continents}</option>
+                 <option value="oceans">{t.oceans}</option>
+                 <option value="countries">{t.countries}</option>
+               </select>
+               <input name="image" placeholder={t.imageLabel} className="p-4 bg-blue-50 rounded-2xl font-bold border-2 border-blue-100 outline-none" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex gap-2 items-center text-xs font-black text-blue-300 uppercase tracking-widest px-2">
+                <Languages size={14} />
+                {t.nameLabel} (UZ / KAA / RU / EN)
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input required name="name_uz" placeholder="Uzbek" className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 outline-none" />
+                <input required name="name_kaa" placeholder="Qaraqalpaq" className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 outline-none" />
+                <input required name="name_ru" placeholder="Russian" className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 outline-none" />
+                <input required name="name_en" placeholder="English" className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 outline-none" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-xs font-black text-blue-300 uppercase tracking-widest px-2">{t.descLabel}</div>
+              <textarea required name="desc_uz" className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 outline-none h-24" placeholder="Uzbek..."></textarea>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-xs font-black text-blue-300 uppercase tracking-widest px-2">{t.factLabel} (UZ)</div>
+              <textarea required name="facts_uz" className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 outline-none h-24" placeholder="Fakt 1&#10;Fakt 2..."></textarea>
+              {/* Note: Simplified for the demo, normally we'd have facts in all languages in the form too */}
+              <input type="hidden" name="facts_kaa" value="Sample fact" />
+              <input type="hidden" name="facts_ru" value="Sample fact" />
+              <input type="hidden" name="facts_en" value="Sample fact" />
+              <input type="hidden" name="desc_kaa" value="Sample desc" />
+              <input type="hidden" name="desc_ru" value="Sample desc" />
+              <input type="hidden" name="desc_en" value="Sample desc" />
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button 
+                type="button" 
+                onClick={() => setIsAddModalOpen(false)}
+                className="flex-1 py-4 bg-gray-100 text-gray-500 font-black rounded-2xl uppercase tracking-widest"
+              >
+                {t.cancel}
+              </button>
+              <button 
+                type="submit" 
+                className="flex-1 py-4 bg-brand-green text-white font-black rounded-2xl shadow-lg uppercase tracking-widest"
+              >
+                {t.save}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    );
+  };
+
+  const renderQRModal = () => {
+    const appUrl = process.env.APP_URL || window.location.origin;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(appUrl)}`;
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-blue-900/60 backdrop-blur-md">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl text-center"
+        >
+          <h2 className="text-2xl font-black text-blue-900 mb-2">{t.qrTitle}</h2>
+          <p className="text-xs text-slate-500 mb-8 font-bold leading-relaxed">{t.qrDesc}</p>
+          
+          <div className="bg-blue-50 p-6 rounded-[2rem] mb-8 border-4 border-dashed border-blue-100 inline-block">
+            <img src={qrUrl} alt="QR Code" className="w-48 h-48 mx-auto mix-blend-multiply" />
+          </div>
+
+          <div className="flex flex-col gap-3">
+             <a 
+               href={qrUrl} 
+               download="qrcode.png"
+               target="_blank"
+               rel="noreferrer"
+               className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl flex items-center justify-center gap-2 uppercase tracking-widest hover:bg-blue-700 transition-colors"
+             >
+               <Download size={20} />
+               Yuklab olish
+             </a>
+             <button 
+               onClick={() => setIsQRModalOpen(false)}
+               className="w-full py-4 bg-gray-100 text-gray-500 font-black rounded-2xl uppercase tracking-widest"
+             >
+               {t.back}
+             </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  };
 
   const renderDetail = () => {
     if (!currentItem) return null;
@@ -117,6 +291,14 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-blue-100 shadow-sm">
+            <button 
+              onClick={() => setIsQRModalOpen(true)}
+              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+              title={t.shareQR}
+            >
+              <QrCode size={20} />
+            </button>
+            <div className="w-[1px] h-4 bg-blue-100 mx-1" />
             {(['uz', 'kaa', 'ru', 'en'] as Language[]).map((l) => (
               <button
                 key={l}
@@ -172,11 +354,21 @@ export default function App() {
                 />
               </nav>
             </div>
+
+            {activeTab !== 'home' && activeTab !== 'videos' && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="w-full p-6 bg-white border-4 border-dashed border-blue-100 rounded-[2rem] text-blue-400 font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors"
+              >
+                <Plus size={20} />
+                {t.addItem}
+              </button>
+            )}
             
             <div className="bg-brand-orange rounded-[2.5rem] p-6 shadow-lg text-white">
               <p className="text-[10px] font-bold uppercase opacity-80 mb-2 tracking-widest">Kun fakti</p>
               <p className="text-sm font-medium leading-relaxed italic">
-                "{t.title === "Dunyo bo'ylab sayohat" ? "Tinch okeani Yer sharining deyarli uchdan bir qismini egallaydi!" : data.continents[0].facts[lang][0]}"
+                "{t.title === "Dunyo bo'ylab sayohat" ? "Tinch okeani Yer sharining deyarli uchdan bir qismini egallaydi!" : mergedData.continents[0].facts[lang][0]}"
               </p>
             </div>
           </aside>
@@ -213,7 +405,7 @@ export default function App() {
                 </motion.div>
               ) : activeTab === 'videos' ? (
                 <div key="videos" className="flex flex-col gap-6">
-                  {data.videos.map((video) => (
+                  {mergedData.videos.map((video) => (
                     <motion.div 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -241,7 +433,7 @@ export default function App() {
                   animate={{ opacity: 1 }}
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
-                  {data[activeTab as 'continents' | 'oceans' | 'countries'].map(item => (
+                  {mergedData[activeTab as 'continents' | 'oceans' | 'countries'].map(item => (
                     <motion.div
                       layoutId={item.id}
                       key={item.id}
@@ -249,7 +441,7 @@ export default function App() {
                       className="group cursor-pointer bg-white rounded-[2rem] p-4 shadow-md hover:shadow-xl transition-all border-b-4 border-gray-50 flex items-center gap-4"
                     >
                       <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-inner">
-                        <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                        <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform" referrerPolicy="no-referrer" />
                       </div>
                       <h3 className="font-black text-blue-900 text-sm tracking-tight">{item.name[lang]}</h3>
                     </motion.div>
@@ -264,9 +456,9 @@ export default function App() {
             <div className="bg-blue-600 rounded-[2.5rem] p-6 text-white shadow-xl flex flex-col h-full">
               <h3 className="text-xs font-black mb-6 uppercase tracking-widest opacity-80 border-b border-white/20 pb-2">Dunyo Raqamlarda</h3>
               <div className="space-y-4">
-                <StatCard value={`${data.continents.length}`} label={t.continents} color="bg-white/10" />
-                <StatCard value={`${data.oceans.length}`} label={t.oceans} color="bg-white/10" />
-                <StatCard value={`${data.countries.length}+`} label={t.countries} color="bg-white/10" />
+                <StatCard value={`${mergedData.continents.length}`} label={t.continents} color="bg-white/10" />
+                <StatCard value={`${mergedData.oceans.length}`} label={t.oceans} color="bg-white/10" />
+                <StatCard value={`${mergedData.countries.length}`} label={t.countries} color="bg-white/10" />
               </div>
               <div className="mt-auto pt-8">
                 <div className="bg-white p-3 rounded-2xl shadow-inner border-2 border-dashed border-blue-400">
@@ -297,6 +489,14 @@ export default function App() {
 
       <AnimatePresence>
         {selectedItem && renderDetail()}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isAddModalOpen && renderAddModal()}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isQRModalOpen && renderQRModal()}
       </AnimatePresence>
     </div>
   );

@@ -12,7 +12,17 @@ export const translations: Record<Language, Translation> = {
     interestingFacts: "Qiziqarli faktlar",
     back: "Orqaga",
     videoSectionTitle: "Geografiya bo'yicha videolar",
-    videoSectionDesc: "Dunyo mo'jizalarini video darsliklar orqali kashf eting."
+    videoSectionDesc: "Dunyo mo'jizalarini video darsliklar orqali kashf eting.",
+    addItem: "Yangi qo'shish",
+    save: "Saqlash",
+    cancel: "Bekor qilish",
+    nameLabel: "Nomi",
+    descLabel: "Tavsifi",
+    factLabel: "Fakt (har bir qator bittadan)",
+    imageLabel: "Rasm URL manzili",
+    shareQR: "QR Kodni ko'rish",
+    qrTitle: "Ilova QR kodi",
+    qrDesc: "Ushbu QR kodni darslikka joylashtirish orqali o'quvchilar ilovaga tezkor kirishlari mumkin."
   },
   kaa: {
     title: "Du'nya boylap sayaxat",
@@ -25,7 +35,17 @@ export const translations: Record<Language, Translation> = {
     interestingFacts: "Qızıqlı faktlar",
     back: "Izge",
     videoSectionTitle: "Geografiya boyınsha videolar",
-    videoSectionDesc: "Du'nya ka'ramatların video sabaqlıqlar arqalı kashf etin'."
+    videoSectionDesc: "Du'nya ka'ramatların video sabaqlıqlar arqalı kashf etin'.",
+    addItem: "Jan'adan qosıw",
+    save: "Saqlaw",
+    cancel: "Biykar qılıw",
+    nameLabel: "Atı",
+    descLabel: "Tu'sindirmesi",
+    factLabel: "Fakt (ha'r bir qatar birewden)",
+    imageLabel: "Su'wret URL ma'nzili",
+    shareQR: "QR Kodtı ko'riw",
+    qrTitle: "Ilova QR kodı",
+    qrDesc: "Usı QR kodtı sabaqlıqqa jaylastırıw arqalı oqıwshılar ilovag'a tezirek kiriwi mu'mkin."
   },
   ru: {
     title: "Путешествие по миру",
@@ -38,7 +58,17 @@ export const translations: Record<Language, Translation> = {
     interestingFacts: "Интересные факты",
     back: "Назад",
     videoSectionTitle: "Видео по географии",
-    videoSectionDesc: "Откройте для себя чудеса мира с помощью видеоуроков."
+    videoSectionDesc: "Откройте для себя чудеса мира с помощью видеоуроков.",
+    addItem: "Добавить новый",
+    save: "Сохранить",
+    cancel: "Отмена",
+    nameLabel: "Название",
+    descLabel: "Описание",
+    factLabel: "Факт (каждая строка — один факт)",
+    imageLabel: "URL изображения",
+    shareQR: "Показать QR-код",
+    qrTitle: "QR-код приложения",
+    qrDesc: "Разместите этот QR-код в учебнике, чтобы учащиеся могли быстро перейти к приложению."
   },
   en: {
     title: "Journey Around the World",
@@ -51,7 +81,17 @@ export const translations: Record<Language, Translation> = {
     interestingFacts: "Interesting Facts",
     back: "Back",
     videoSectionTitle: "Geography Videos",
-    videoSectionDesc: "Discover the wonders of the world through video tutorials."
+    videoSectionDesc: "Discover the wonders of the world through video tutorials.",
+    addItem: "Add New",
+    save: "Save",
+    cancel: "Cancel",
+    nameLabel: "Name",
+    descLabel: "Description",
+    factLabel: "Fact (one per line)",
+    imageLabel: "Image URL",
+    shareQR: "QR Kodni ko'rish",
+    qrTitle: "Ilova QR kodi",
+    qrDesc: "Ushbu QR kodni darslikka joylashtirish orqali o'quvchilar ilovaga tezkor kirishlari mumkin."
   }
 };
 

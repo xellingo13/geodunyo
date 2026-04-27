@@ -12,6 +12,16 @@ export interface Translation {
   back: string;
   videoSectionTitle: string;
   videoSectionDesc: string;
+  addItem: string;
+  save: string;
+  cancel: string;
+  nameLabel: string;
+  descLabel: string;
+  factLabel: string;
+  imageLabel: string;
+  shareQR: string;
+  qrTitle: string;
+  qrDesc: string;
 }
 
 export interface GeoItem {
